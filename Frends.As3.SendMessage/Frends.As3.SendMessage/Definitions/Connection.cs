@@ -1,6 +1,6 @@
-using Frends.As3.SendMessage.Attributes;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Frends.As3.SendMessage.Attributes;
 
 namespace Frends.As3.SendMessage.Definitions;
 
@@ -13,6 +13,7 @@ public class Connection
     /// FTP server host name or IP address for the AS3 connection.
     /// </summary>
     /// <example>ftp.example.com</example>
+    [Required]
     [DisplayFormat(DataFormatString = "Text")]
     public string FtpHost { get; set; }
 
@@ -27,6 +28,7 @@ public class Connection
     /// Username for FTP authentication.
     /// </summary>
     /// <example>myFtpUser</example>
+    [Required]
     [DisplayFormat(DataFormatString = "Text")]
     public string FtpUser { get; set; }
 
@@ -34,6 +36,7 @@ public class Connection
     /// Password for FTP authentication.
     /// </summary>
     /// <example>myFtpPassword123</example>
+    [Required]
     [DisplayFormat(DataFormatString = "Text")]
     [PasswordPropertyText]
     public string FtpPassword { get; set; }
@@ -99,6 +102,7 @@ public class Connection
     /// Email where to send the MDN (Message Disposition Notification).
     /// </summary>
     /// <example>user@example.com</example>
+    [Required]
     [DisplayFormat(DataFormatString = "Text")]
     public string MdnReceiver { get; set; }
 
