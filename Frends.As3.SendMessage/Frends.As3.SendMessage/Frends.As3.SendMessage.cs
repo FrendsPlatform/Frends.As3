@@ -22,7 +22,7 @@ public static class As3
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, Exception AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, string PartnerResponse, string MessageId, string OriginalContentMIC, string MdnOptions, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> SendMessage(
     [PropertyTab] Input input,
     [PropertyTab] Connection connection,
@@ -31,6 +31,8 @@ public static class As3
     {
         try
         {
+            ValidationHandler.Run(input, connection, options);
+
             var as3 = NSoftware.Activation.NSoftware.ActivateAs3Sender();
 
             as3.AS3From = input.SenderAs3Id;
@@ -47,7 +49,7 @@ public static class As3
 
             as3.MDNTo = connection.MdnReceiver;
 
-            if (connection.EncryptMessage || connection.SignMessage)
+            if (connection.EncryptMessage)
             {
                 as3.RecipientCerts.Add(new Certificate(connection.ReceiverCertificatePath));
             }

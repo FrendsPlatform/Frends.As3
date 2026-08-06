@@ -95,4 +95,10 @@ public static class TestSetup
 
     public static string AbsoluteFtpSubdirPath(string fileName)
         => $"{FtpSubdirAbsolute}/{fileName}";
+
+    public static async Task<string> ReadFileFromFtp(IContainer container, string remotePath)
+    {
+        var result = await container.ExecAsync(new[] { "cat", remotePath });
+        return result.Stdout;
+    }
 }

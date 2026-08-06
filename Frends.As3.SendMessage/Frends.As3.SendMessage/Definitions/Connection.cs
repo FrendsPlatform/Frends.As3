@@ -1,3 +1,4 @@
+using Frends.As3.SendMessage.Attributes;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -72,6 +73,7 @@ public class Connection
     /// <example>mySecurePassword123</example>
     [DisplayFormat(DataFormatString = "Text")]
     [PasswordPropertyText]
+    [RequiredIf(nameof(SignMessage), true)]
     [UIHint(nameof(SignMessage), "", true)]
     public string SenderCertificatePassword { get; set; }
 
@@ -81,6 +83,7 @@ public class Connection
     /// <example>C:\Document\sender_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]
     [UIHint(nameof(SignMessage), "", true)]
+    [RequiredIf(nameof(SignMessage), true)]
     public string SenderCertificatePath { get; set; }
 
     /// <summary>
@@ -89,6 +92,7 @@ public class Connection
     /// <example>C:\Document\receiver_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]
     [UIHint(nameof(EncryptMessage), "", true)]
+    [RequiredIf(nameof(EncryptMessage), true)]
     public string ReceiverCertificatePath { get; set; }
 
     /// <summary>
@@ -104,5 +108,5 @@ public class Connection
     /// <example>application/zip</example>
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("text/plain")]
-    public string ContentTypeHeader { get; set; }
+    public string ContentTypeHeader { get; set; } = "text/plain";
 }

@@ -52,6 +52,9 @@ public class FunctionalTests
         Assert.That(result.OriginalContentMIC, Is.Not.Null.And.Not.Empty);
         Assert.That(result.MdnOptions, Is.Not.Null.And.Not.Empty);
         Assert.That(await TestSetup.FileExistsOnFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName)), Is.True);
+
+        var content = await TestSetup.ReadFileFromFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName));
+        Assert.That(content, Does.Contain("multipart/signed").Or.Contain("pkcs7-signature"));
     }
 
     [Test]
@@ -65,6 +68,12 @@ public class FunctionalTests
 
         Assert.That(result.Success, Is.True);
         Assert.That(await TestSetup.FileExistsOnFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName)), Is.True);
+
+        var content = await TestSetup.ReadFileFromFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName));
+        Assert.That(content, Does.Contain("application/pkcs7-mime").Or.Contain("enveloped-data"));
+
+        var plaintext = await File.ReadAllTextAsync(TestSetup.Input().MessageFilePath);
+        Assert.That(content, Does.Not.Contain(plaintext));
     }
 
     [Test]
@@ -81,6 +90,12 @@ public class FunctionalTests
         Assert.That(result.OriginalContentMIC, Is.Not.Null.And.Not.Empty);
         Assert.That(result.MdnOptions, Is.Not.Null.And.Not.Empty);
         Assert.That(await TestSetup.FileExistsOnFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName)), Is.True);
+
+        var content = await TestSetup.ReadFileFromFtp(ftpContainer, TestSetup.AbsoluteFtpPath(FileName));
+        Assert.That(content, Does.Contain("application/pkcs7-mime").Or.Contain("enveloped-data"));
+
+        var plaintext = await File.ReadAllTextAsync(TestSetup.Input().MessageFilePath);
+        Assert.That(content, Does.Not.Contain(plaintext));
     }
 
     [Test]
