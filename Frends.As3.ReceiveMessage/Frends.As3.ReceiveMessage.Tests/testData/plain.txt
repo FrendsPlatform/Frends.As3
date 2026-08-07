@@ -1,0 +1,12 @@
+AS3-To: Receiver
+AS3-From: Sender
+AS3-Version: 1.0
+EDIINT-Features: CEM, multiple-attachments, AS2-Reliability
+Date: Thu, 06 Aug 2026 09:52:25 GMT
+Subject: Test AS3 Connection
+Message-Id: <<60f3099a-1a5c-470d-9d46-0d2778906a6e@localhost>>
+Disposition-Notification-To: usr@example.com
+Content-Disposition: Attachment; filename="rfc1767.edi"
+Content-Type: text/plain
+
+This is a nice test message :)

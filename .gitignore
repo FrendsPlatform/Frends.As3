@@ -46,7 +46,6 @@ $RECYCLE.BIN/
 .nfs*
 
 # Certificate files
-*.pfx
 *.p12
 
 # Azure Pipelines
