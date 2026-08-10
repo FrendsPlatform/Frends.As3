@@ -1,0 +1,26 @@
+AS3-From: Receiver
+AS3-To: Sender
+AS3-Version: 1.0
+EDIINT-Features: CEM, multiple-attachments
+Subject: Message Disposition Notification
+Content-Description: MIME Message
+Message-ID: <bdc862c1-d65b-4470-a0b4-ed8c49cd836c@Sender>
+Content-Type: multipart/report; report-type=disposition-notification; boundary="MDNBoundary"
+
+
+--MDNBoundary
+Content-Type: text/plain
+
+The incoming message from Sender to Receiver with Id <<60f3099a-1a5c-470d-9d46-0d2778906a6e@localhost>> was NOT processed successfully. The following error(s) have occurred:
+
+Unexpected processing error.
+
+--MDNBoundary
+Content-Type: message/disposition-notification
+
+Original-Recipient: rfc822;Receiver
+Final-Recipient: rfc822;Receiver
+Original-Message-ID: <<60f3099a-1a5c-470d-9d46-0d2778906a6e@localhost>>
+Disposition: automatic-action/MDN-sent-automatically; processed/Error: unexpected-processing-error
+
+--MDNBoundary--
