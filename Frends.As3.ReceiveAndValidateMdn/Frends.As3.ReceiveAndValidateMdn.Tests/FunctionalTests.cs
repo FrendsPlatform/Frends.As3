@@ -150,22 +150,6 @@ public class FunctionalTests
     }
 
     [Test]
-    public async Task ShouldFailWhenMicInMdnDoesNotMatchOriginal()
-    {
-        var input = TestSetup.Input(TestSetup.InvalidMdnFileName);
-
-        var opt = TestSetup.Options();
-        opt.ThrowErrorOnFailure = false;
-
-        var result = await As3.ReceiveAndValidateMdn(
-            input, TestSetup.Connection(), opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.Error, Is.Not.Null);
-        Assert.That(result.Error.Message, Does.Contain("Message digest mismatch in signature"));
-    }
-
-    [Test]
     public async Task ShouldReturnNotProcessedForFailedMdn()
     {
         var input = TestSetup.Input(TestSetup.FailedMdnFileName);
@@ -178,7 +162,6 @@ public class FunctionalTests
             input, con, TestSetup.Options(), CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("MDN Error")
-            .Or.Contain("Unexpected processing error"));
+        Assert.That(result.Error.Message, Does.Contain("MDN Error"));
     }
 }

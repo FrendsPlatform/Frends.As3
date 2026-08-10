@@ -50,40 +50,46 @@ public static class As3
                 as3.ReceiptSignerCert = new Certificate(connection.PartnerCertificatePath);
 
             await as3.Logon(cancellationToken);
-
-            var mdnDirectory = Path.GetDirectoryName(input.RemoteMdnPath);
-            var mdnFileName = Path.GetFileName(input.RemoteMdnPath);
-
-            if (!string.IsNullOrEmpty(mdnDirectory))
-                await as3.ChangeRemotePath(mdnDirectory, cancellationToken);
-
-            await as3.ReadReceipt(mdnFileName, cancellationToken);
-
-            await as3.VerifyReceipt(cancellationToken);
-
-            var disposition = as3.MDNReceipt.MDN
-                .Split("\r\n")
-                .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))
-                ?.Trim();
-
-            var originalMessageId = as3.MDNReceipt.MDN
-                .Split("\r\n")
-                .FirstOrDefault(l => l.StartsWith("Original-Message-ID:", StringComparison.OrdinalIgnoreCase))
-                ?.Replace("Original-Message-ID:", string.Empty)
-                .Trim();
-
-            if (options.DeleteMdnAfterVerification)
-                await as3.DeleteFile(mdnFileName, cancellationToken);
-
-            await as3.Logoff(cancellationToken);
-
-            return new Result
+            try
             {
-                Success = true,
-                OriginalMessageId = originalMessageId,
-                Disposition = disposition,
-                IsProcessed = ParseIsProcessed(disposition),
-            };
+                var mdnDirectory = Path.GetDirectoryName(input.RemoteMdnPath);
+                var mdnFileName = Path.GetFileName(input.RemoteMdnPath);
+
+                if (!string.IsNullOrEmpty(mdnDirectory))
+                    await as3.ChangeRemotePath(mdnDirectory, cancellationToken);
+
+                await as3.ReadReceipt(mdnFileName, cancellationToken);
+
+                await as3.VerifyReceipt(cancellationToken);
+
+                var disposition = as3.MDNReceipt.MDN
+                    .Split("\r\n")
+                    .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))
+                    ?.Trim();
+
+                var originalMessageId = as3.MDNReceipt.MDN
+                    .Split("\r\n")
+                    .FirstOrDefault(l => l.StartsWith("Original-Message-ID:", StringComparison.OrdinalIgnoreCase))
+                    ?.Substring("Original-Message-ID:".Length)
+                    .Trim();
+
+                if (options.DeleteMdnAfterVerification)
+                    await as3.DeleteFile(mdnFileName, cancellationToken);
+
+                await as3.Logoff(cancellationToken);
+
+                return new Result
+                {
+                    Success = true,
+                    OriginalMessageId = originalMessageId,
+                    Disposition = disposition,
+                    IsProcessed = ParseIsProcessed(disposition),
+                };
+            }
+            finally
+            {
+                await as3.Logoff(cancellationToken);
+            }
         }
         catch (Exception e)
         {
