@@ -44,6 +44,11 @@ public static class As3
 
             if (connection.RequireEncrypted || connection.RequireSigned)
             {
+                if (string.IsNullOrWhiteSpace(connection.OwnCertificatePath))
+                    throw new ArgumentException("OwnCertificatePath is required when RequireEncrypted or RequireSigned is true.");
+                if (string.IsNullOrWhiteSpace(connection.OwnCertificatePassword))
+                    throw new ArgumentException("OwnCertificatePassword is required when RequireEncrypted or RequireSigned is true.");
+
                 as3.Certificate = new Certificate(
                     CertStoreTypes.cstAuto,
                     connection.OwnCertificatePath,
@@ -60,79 +65,84 @@ public static class As3
             await as3.Config($"RequireSign={connection.RequireSigned}");
 
             await as3.Logon(cancellationToken);
-
-            var messageDirectory = Path.GetDirectoryName(input.RemoteMessagePath)?.Replace("\\", "/");
-            var messageFileName = Path.GetFileName(input.RemoteMessagePath);
-
-            if (!string.IsNullOrEmpty(messageDirectory))
-                await as3.ChangeRemotePath(messageDirectory, cancellationToken);
-
-            await as3.ReadRequest(messageFileName, cancellationToken);
-
-            Exception processingError = null;
             try
             {
-                await as3.ProcessRequest(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                processingError = ex;
-            }
 
-            if (!string.IsNullOrEmpty(messageDirectory))
-                await as3.ChangeRemotePath("/", cancellationToken);
+                var messageDirectory = Path.GetDirectoryName(input.RemoteMessagePath)?.Replace("\\", "/");
+                var messageFileName = Path.GetFileName(input.RemoteMessagePath);
 
-            if (!string.IsNullOrEmpty(input.RemoteMdnPath))
-                await as3.ChangeRemotePath(input.RemoteMdnPath, cancellationToken);
-
-            string mdnRemotePath = null;
-
-            if (as3.MDNReceipt != null)
-            {
-                var messageId = string.IsNullOrWhiteSpace(as3.MessageId)
-                    ? Guid.NewGuid().ToString("N")
-                    : as3.MessageId.Trim('<', '>');
-
-                var mdnFileName = $"mdn-{messageId}.txt";
-                await as3.SendResponse(mdnFileName, cancellationToken);
-
-                mdnRemotePath = string.IsNullOrEmpty(input.RemoteMdnPath)
-                    ? mdnFileName
-                    : $"{input.RemoteMdnPath}/{mdnFileName}";
-            }
-
-            if (processingError != null)
-            {
-                await as3.Logoff(cancellationToken);
-
-                var errorResult = ErrorHandler.Handle(processingError, options);
-                errorResult.MdnRemotePath = mdnRemotePath;
-                errorResult.MessageId = as3.MessageId;
-                errorResult.As3From = as3.AS3From;
-                errorResult.As3To = as3.AS3To;
-                return errorResult;
-            }
-
-            if (options.DeleteMessageAfterProcessing)
-            {
-                if (!string.IsNullOrEmpty(input.RemoteMdnPath))
-                    await as3.ChangeRemotePath("/", cancellationToken);
                 if (!string.IsNullOrEmpty(messageDirectory))
                     await as3.ChangeRemotePath(messageDirectory, cancellationToken);
-                await as3.DeleteFile(messageFileName, cancellationToken);
+
+                await as3.ReadRequest(messageFileName, cancellationToken);
+
+                Exception processingError = null;
+                try
+                {
+                    await as3.ProcessRequest(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    processingError = ex;
+                }
+
+                if (!string.IsNullOrEmpty(messageDirectory))
+                    await as3.ChangeRemotePath("/", cancellationToken);
+
+                if (!string.IsNullOrEmpty(input.RemoteMdnPath))
+                    await as3.ChangeRemotePath(input.RemoteMdnPath, cancellationToken);
+
+                string mdnRemotePath = null;
+
+                if (as3.MDNReceipt != null)
+                {
+                    var messageId = string.IsNullOrWhiteSpace(as3.MessageId)
+                        ? Guid.NewGuid().ToString("N")
+                        : as3.MessageId.Trim('<', '>');
+
+                    var mdnFileName = $"mdn-{messageId}.txt";
+                    await as3.SendResponse(mdnFileName, cancellationToken);
+
+                    mdnRemotePath = string.IsNullOrEmpty(input.RemoteMdnPath)
+                        ? $"/{mdnFileName}"
+                        : $"{input.RemoteMdnPath.TrimEnd('/')}/{mdnFileName}";
+                }
+
+                if (processingError != null)
+                {
+                    var errorResult = ErrorHandler.Handle(processingError, options);
+                    errorResult.MdnRemotePath = mdnRemotePath;
+                    errorResult.MessageId = as3.MessageId;
+                    errorResult.As3From = as3.AS3From;
+                    errorResult.As3To = as3.AS3To;
+                    return errorResult;
+                }
+
+                if (options.DeleteMessageAfterProcessing)
+                {
+                    if (!string.IsNullOrEmpty(input.RemoteMdnPath))
+                        await as3.ChangeRemotePath("/", cancellationToken);
+                    if (!string.IsNullOrEmpty(messageDirectory))
+                        await as3.ChangeRemotePath(messageDirectory, cancellationToken);
+                    await as3.DeleteFile(messageFileName, cancellationToken);
+                }
+
+                await as3.Logoff(cancellationToken);
+
+                return new Result
+                {
+                    Success = true,
+                    As3From = as3.AS3From,
+                    As3To = as3.AS3To,
+                    MessageId = as3.MessageId,
+                    Payload = as3.EDIData?.Data,
+                    MdnRemotePath = mdnRemotePath,
+                };
             }
-
-            await as3.Logoff(cancellationToken);
-
-            return new Result
+            finally
             {
-                Success = true,
-                As3From = as3.AS3From,
-                As3To = as3.AS3To,
-                MessageId = as3.MessageId,
-                Payload = as3.EDIData?.Data,
-                MdnRemotePath = mdnRemotePath,
-            };
+                await as3.Logoff(cancellationToken);
+            }
         }
         catch (Exception e)
         {

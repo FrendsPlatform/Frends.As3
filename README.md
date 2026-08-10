@@ -4,8 +4,8 @@ Frends tasks for As3 related operations.
 
 # Tasks
 
-- [Frends.As3.SendMessage}](Frends.As3.SendMessage/README.md)
-- [Frends.As3.ReceiveMessage}](Frends.As3.ReceiveMessage/README.md)
+- [Frends.As3.SendMessage](Frends.As3.SendMessage/README.md)
+- [Frends.As3.ReceiveMessage](Frends.As3.ReceiveMessage/README.md)
 
 # Contributing
 
