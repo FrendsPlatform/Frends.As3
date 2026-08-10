@@ -9,6 +9,13 @@ namespace Frends.As3.ReceiveMessage.Definitions;
 public class Options
 {
     /// <summary>
+    /// If true, the original AS3 message file will be deleted from the FTP server after successful processing.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool DeleteMessageAfterProcessing { get; set; } = false;
+
+    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>true</example>
@@ -22,10 +29,4 @@ public class Options
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("")]
     public string ErrorMessageOnFailure { get; set; } = string.Empty;
-
-    /// <summary>
-    /// If true, the original AS3 message file will be deleted from the FTP server after successful processing.
-    /// </summary>
-    /// <example>true</example>
-    public bool DeleteMessageAfterProcessing { get; set; }
 }
