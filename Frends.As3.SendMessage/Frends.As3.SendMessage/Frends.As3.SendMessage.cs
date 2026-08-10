@@ -90,7 +90,7 @@ public static class As3
             {
                 Success = true,
                 MessageId = as3.MessageId,
-                OriginalContentMIC = as3.OriginalContentMIC,
+                OriginalContentMIC = as3.OriginalContentMIC.Trim(),
                 MdnOptions = as3.MDNOptions,
                 PartnerResponse = $"File '{fileName}' successfully uploaded to FTP remote directory '{connection.RemoteFilePath ?? "/"}'.",
             };
