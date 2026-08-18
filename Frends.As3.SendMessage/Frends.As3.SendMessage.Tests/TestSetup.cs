@@ -99,6 +99,8 @@ public static class TestSetup
     public static async Task<string> ReadFileFromFtp(IContainer container, string remotePath)
     {
         var result = await container.ExecAsync(new[] { "cat", remotePath });
+        if (result.ExitCode != 0)
+            throw new InvalidOperationException("The FTP file could not be read.");
         return result.Stdout;
     }
 }

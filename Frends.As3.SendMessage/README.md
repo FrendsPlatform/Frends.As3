@@ -26,6 +26,8 @@ Run the tests
 
 `dotnet test`
 
+Make sure Docker is running.
+
 ### Create a NuGet package
 
 `dotnet pack --configuration Release`

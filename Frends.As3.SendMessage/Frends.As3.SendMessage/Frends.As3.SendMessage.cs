@@ -74,7 +74,8 @@ public static class As3
             as3.EDIData.EDIType = connection.ContentTypeHeader;
             as3.EDIData.Data = await File.ReadAllTextAsync(input.MessageFilePath, cancellationToken);
 
-            as3.LogDirectory = "logs";
+            if (!string.IsNullOrEmpty(options.LogDirectory))
+                as3.LogDirectory = options.LogDirectory;
 
             var fileName = Path.GetFileName(input.MessageFilePath);
             await as3.Logon(cancellationToken);

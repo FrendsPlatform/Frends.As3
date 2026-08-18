@@ -9,6 +9,14 @@ namespace Frends.As3.SendMessage.Definitions;
 public class Options
 {
     /// <summary>
+    /// Directory path where AS3 communication logs will be stored. Leave empty to disable logging.
+    /// The caller is responsible for log rotation and cleanup of files in this directory.
+    /// </summary>
+    /// <example>C:\Logs\AS3</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string LogDirectory { get; set; }
+
+    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>false</example>

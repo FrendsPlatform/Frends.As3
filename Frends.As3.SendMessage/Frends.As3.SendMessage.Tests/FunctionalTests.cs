@@ -1,8 +1,9 @@
+using DotNet.Testcontainers.Containers;
+using NUnit.Framework;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNet.Testcontainers.Containers;
-using NUnit.Framework;
 
 namespace Frends.As3.SendMessage.Tests;
 
@@ -189,5 +190,31 @@ public class FunctionalTests
         Assert.That(result.OriginalContentMIC, Is.Not.Null.And.Not.Empty, "MIC should be set when signing");
         Assert.That(result.MdnOptions, Is.Not.Null.And.Not.Empty, "MdnOptions should be set when signing");
         Assert.That(result.PartnerResponse, Is.Not.Null.And.Not.Empty, "PartnerResponse should be set");
+    }
+
+    [Test]
+    public async Task ShouldWriteLogsToSpecifiedDirectory()
+    {
+        var logDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(logDir);
+
+        try
+        {
+            var opt = TestSetup.Options();
+            opt.LogDirectory = logDir;
+
+            var result = await As3.SendMessage(
+                TestSetup.Input(),
+                TestSetup.Connection(),
+                opt,
+                CancellationToken.None);
+
+            Assert.That(result.Success, Is.True);
+            Assert.That(Directory.GetFiles(logDir), Is.Not.Empty, "Log files should be created in the specified directory");
+        }
+        finally
+        {
+            Directory.Delete(logDir, recursive: true);
+        }
     }
 }
