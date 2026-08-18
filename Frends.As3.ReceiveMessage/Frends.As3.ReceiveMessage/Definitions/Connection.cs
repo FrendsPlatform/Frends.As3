@@ -66,7 +66,7 @@ public class Connection
     /// <example>C:\Document\own_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]
     [UIHint(nameof(RequireEncrypted), "", true)]
-    [RequiredIf(nameof(RequireEncrypted), true)]
+    [RequiredIfAny(nameof(RequireEncrypted), nameof(RequireSigned))]
     public string OwnCertificatePath { get; set; }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class Connection
     [DisplayFormat(DataFormatString = "Text")]
     [PasswordPropertyText]
     [UIHint(nameof(RequireEncrypted), "", true)]
-    [RequiredIf(nameof(RequireEncrypted), true)]
+    [RequiredIfAny(nameof(RequireEncrypted), nameof(RequireSigned))]
     public string OwnCertificatePassword { get; set; }
 
     /// <summary>

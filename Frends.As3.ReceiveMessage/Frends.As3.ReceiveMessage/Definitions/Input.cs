@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Frends.As3.ReceiveMessage.Definitions;
 
@@ -17,8 +18,10 @@ public class Input
 
     /// <summary>
     /// Path to the directory on the FTP server where the generated MDN receipt will be stored.
+    /// Defaults to the FTP root directory.
     /// </summary>
     /// <example>/mdn</example>
     [DisplayFormat(DataFormatString = "Text")]
-    public string RemoteMdnPath { get; set; }
+    [DefaultValue("/")]
+    public string RemoteMdnPath { get; set; } = "/";
 }

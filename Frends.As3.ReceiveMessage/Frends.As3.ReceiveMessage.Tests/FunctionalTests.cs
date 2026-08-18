@@ -198,4 +198,38 @@ public class FunctionalTests
         var mdnContent = await TestSetup.ReadFileFromContainer(ftpContainer, TestSetup.AbsoluteMdnPath(mdnFileName));
         Assert.That(mdnContent, Does.Contain("unexpected-processing-error"));
     }
+
+    [Test]
+    public async Task ShouldFailWhenOnlyRequireSignedTrueAndOwnCertificatePathMissing()
+    {
+        var con = TestSetup.Connection(requireSigned: true, requireEncrypted: false);
+        con.OwnCertificatePath = null;
+        con.OwnCertificatePassword = null;
+
+        var opt = TestSetup.Options();
+        opt.ThrowErrorOnFailure = false;
+
+        var result = await As3.ReceiveMessage(
+            TestSetup.Input("plain.txt"), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("OwnCertificatePath is required"));
+    }
+
+    [Test]
+    public async Task ShouldFailWhenOnlyRequireEncryptedTrueAndOwnCertificatePathMissing()
+    {
+        var con = TestSetup.Connection(requireSigned: false, requireEncrypted: true);
+        con.OwnCertificatePath = null;
+        con.OwnCertificatePassword = null;
+
+        var opt = TestSetup.Options();
+        opt.ThrowErrorOnFailure = false;
+
+        var result = await As3.ReceiveMessage(
+            TestSetup.Input("plain.txt"), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("OwnCertificatePath is required"));
+    }
 }
