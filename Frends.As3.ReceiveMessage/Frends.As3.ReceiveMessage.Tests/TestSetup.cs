@@ -57,9 +57,13 @@ public static class TestSetup
     {
         var localPath = Path.Combine(TestDataDir, localFileName);
         var targetFileName = remoteFileName ?? localFileName;
-        var fileBytes = await File.ReadAllBytesAsync(localPath);
-        await container.CopyAsync(fileBytes, $"{InboxAbsolute}/{targetFileName}");
-        await container.ExecAsync(["chmod", "777", $"{InboxAbsolute}/{targetFileName}"]);
+        var base64 = Convert.ToBase64String(await File.ReadAllBytesAsync(localPath));
+        await container.ExecAsync(
+        [
+        "sh", "-c",
+        $"echo '{base64}' | base64 -d > {InboxAbsolute}/{targetFileName}",
+        ]);
+        await container.ExecAsync(new[] { "chmod", "777", $"{InboxAbsolute}/{targetFileName}" });
     }
 
     public static Input Input(string messageFileName) => new()
