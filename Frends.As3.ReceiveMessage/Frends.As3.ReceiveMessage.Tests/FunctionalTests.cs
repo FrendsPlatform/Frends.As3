@@ -241,7 +241,11 @@ public class FunctionalTests
     public async Task DiagnosticCheckFiles()
     {
         var check = await ftpContainer.ExecAsync(new[] { "ls", "-la", "/home/ftpusers/testuser/inbox/" });
-        Console.WriteLine(check.Stdout);
-        Assert.Pass();
+        TestContext.WriteLine("Directory listing:");
+        TestContext.WriteLine(check.Stdout);
+
+        var content = await ftpContainer.ExecAsync(new[] { "od", "-c", "/home/ftpusers/testuser/inbox/plain.txt" });
+        TestContext.WriteLine("plain.txt content:");
+        TestContext.WriteLine(content.Stdout?[..Math.Min(500, content.Stdout.Length)] ?? "NULL");
     }
 }
