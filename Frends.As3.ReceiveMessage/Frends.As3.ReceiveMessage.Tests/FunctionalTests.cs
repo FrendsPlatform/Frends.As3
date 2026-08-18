@@ -16,7 +16,11 @@ public class FunctionalTests
     public async Task OneTimeSetUp()
     {
         ftpContainer = await TestSetup.StartFtpContainerAsync();
+    }
 
+    [SetUp]
+    public async Task SetUp()
+    {
         await TestSetup.UploadTestFileToContainer(ftpContainer, "plain.txt");
         await TestSetup.UploadTestFileToContainer(ftpContainer, "signed_only.txt");
         await TestSetup.UploadTestFileToContainer(ftpContainer, "encrypted_only.txt");

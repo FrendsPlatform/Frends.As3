@@ -59,6 +59,7 @@ public static class TestSetup
         var targetFileName = remoteFileName ?? localFileName;
         var fileBytes = await File.ReadAllBytesAsync(localPath);
         await container.CopyAsync(fileBytes, $"{InboxAbsolute}/{targetFileName}");
+        await container.ExecAsync(["chmod", "777", $"{InboxAbsolute}/{targetFileName}"]);
     }
 
     public static Input Input(string messageFileName) => new()
