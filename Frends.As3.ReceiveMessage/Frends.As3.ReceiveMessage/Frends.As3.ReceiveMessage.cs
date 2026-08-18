@@ -56,8 +56,8 @@ public static class As3
                 as3.SignerCert = new Certificate(connection.PartnerCertificatePath);
             }
 
-            await as3.Config($"RequireEncrypt={connection.RequireEncrypted}");
-            await as3.Config($"RequireSign={connection.RequireSigned}");
+            await as3.Config($"RequireEncrypt={connection.RequireEncrypted}", cancellationToken);
+            await as3.Config($"RequireSign={connection.RequireSigned}", cancellationToken);
 
             await as3.Logon(cancellationToken);
             try
