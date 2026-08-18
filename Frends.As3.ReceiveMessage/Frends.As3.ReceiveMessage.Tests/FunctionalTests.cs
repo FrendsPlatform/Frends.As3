@@ -42,7 +42,7 @@ public class FunctionalTests
             TestSetup.Options(),
             CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(result.Success, Is.True, result.Error?.Message);
         Assert.That(result.Payload, Is.Not.Null.And.Not.Empty);
         Assert.That(result.MessageId, Is.Not.Null.And.Not.Empty);
         Assert.That(result.As3From, Is.Not.Null.And.Not.Empty);
@@ -235,5 +235,13 @@ public class FunctionalTests
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("OwnCertificatePath is required"));
+    }
+
+    [Test]
+    public async Task DiagnosticCheckFiles()
+    {
+        var check = await ftpContainer.ExecAsync(new[] { "ls", "-la", "/home/ftpusers/testuser/inbox/" });
+        Console.WriteLine(check.Stdout);
+        Assert.Pass();
     }
 }
