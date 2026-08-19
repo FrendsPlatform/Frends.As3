@@ -56,7 +56,7 @@ namespace Frends.As3.ReceiveAndValidateMdn.Tests
         public static Input Input(string mdnFileName = ValidMdnFileName) => new()
         {
             RemoteMdnPath = $"mdn/{mdnFileName}",
-            OriginalContentMIC = ValidOriginalContentMIC,
+            OriginalContentMic = ValidOriginalContentMIC,
             MdnOptions = ValidMdnOptions,
         };
 

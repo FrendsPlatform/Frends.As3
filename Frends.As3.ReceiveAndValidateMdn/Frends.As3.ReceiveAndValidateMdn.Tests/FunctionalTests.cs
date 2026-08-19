@@ -22,7 +22,6 @@ public class FunctionalTests
     public async Task SetUp()
     {
         await TestSetup.UploadMdnFileAsync(ftpContainer, TestSetup.ValidMdnFileName);
-        await TestSetup.UploadMdnFileAsync(ftpContainer, TestSetup.InvalidMdnFileName);
         await TestSetup.UploadMdnFileAsync(ftpContainer, TestSetup.FailedMdnFileName);
     }
 
@@ -51,7 +50,7 @@ public class FunctionalTests
     public async Task ShouldFailForInvalidMic()
     {
         var input = TestSetup.Input();
-        input.OriginalContentMIC = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==, sha256";
+        input.OriginalContentMic = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==, sha256";
 
         var opt = TestSetup.Options();
         opt.ThrowErrorOnFailure = false;
@@ -119,7 +118,7 @@ public class FunctionalTests
     public async Task ShouldFailWhenOriginalContentMicIsMissing()
     {
         var input = TestSetup.Input();
-        input.OriginalContentMIC = null;
+        input.OriginalContentMic = null;
 
         var opt = TestSetup.Options();
         opt.ThrowErrorOnFailure = false;
@@ -150,7 +149,7 @@ public class FunctionalTests
     }
 
     [Test]
-    public async Task ShouldReturnNotProcessedForFailedMdn()
+    public async Task ShouldFailWhenMdnHasNoMicDueToProcessingError()
     {
         var input = TestSetup.Input(TestSetup.FailedMdnFileName);
         input.MdnOptions = null;

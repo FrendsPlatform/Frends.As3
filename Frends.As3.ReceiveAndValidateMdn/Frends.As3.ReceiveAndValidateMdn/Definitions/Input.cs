@@ -21,7 +21,7 @@ public class Input
     /// <example>7v7F+fQbH4lD8bKGJTbXzWWcUlI=, sha256</example>
     [Required]
     [DisplayFormat(DataFormatString = "Text")]
-    public string OriginalContentMIC { get; set; }
+    public string OriginalContentMic { get; set; }
 
     /// <summary>
     /// The MDN options string from the original sent message, describing the requested signature algorithm.

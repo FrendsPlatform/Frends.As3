@@ -1,5 +1,3 @@
-using System;
-using dotenv.net;
 using Frends.As3.ReceiveAndValidateMdn.Definitions;
 
 namespace Frends.As3.ReceiveAndValidateMdn.Tests;

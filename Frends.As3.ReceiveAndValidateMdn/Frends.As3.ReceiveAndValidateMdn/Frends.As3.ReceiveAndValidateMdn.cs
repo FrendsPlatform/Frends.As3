@@ -41,9 +41,11 @@ public static class As3
             as3.User = connection.FtpUser;
             as3.Password = connection.FtpPassword;
             as3.Passive = connection.UsePassiveFtp;
-            as3.LogDirectory = "logs";
 
-            as3.OriginalContentMIC = input.OriginalContentMIC;
+            if (!string.IsNullOrEmpty(options.LogDirectory))
+                as3.LogDirectory = options.LogDirectory;
+
+            as3.OriginalContentMIC = input.OriginalContentMic;
             as3.MDNOptions = input.MdnOptions ?? string.Empty;
 
             if (!string.IsNullOrEmpty(connection.PartnerCertificatePath))
@@ -58,7 +60,21 @@ public static class As3
                 if (!string.IsNullOrEmpty(mdnDirectory))
                     await as3.ChangeRemotePath(mdnDirectory, cancellationToken);
 
-                await as3.ReadReceipt(mdnFileName, cancellationToken);
+                var attempt = 0;
+
+                while (true)
+                {
+                    try
+                    {
+                        await as3.ReadReceipt(mdnFileName, cancellationToken);
+                        break;
+                    }
+                    catch (IPWorksEDIException ex) when (ex.Message.Contains("550") && attempt < options.RetryCount)
+                    {
+                        attempt++;
+                        await Task.Delay(TimeSpan.FromSeconds(options.RetryIntervalSeconds), cancellationToken);
+                    }
+                }
 
                 await as3.VerifyReceipt(cancellationToken);
 
@@ -75,8 +91,6 @@ public static class As3
 
                 if (options.DeleteMdnAfterVerification)
                     await as3.DeleteFile(mdnFileName, cancellationToken);
-
-                await as3.Logoff(cancellationToken);
 
                 return new Result
                 {
