@@ -14,3 +14,5 @@ jobs:
       strict_analyzers: true
     secrets:
       feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      build_time_nuget_feed_url: ${{ secrets.BUILD_TIME_NUGET_FEED_URL }}
+      build_time_nuget_feed_api_key: ${{ secrets.BUILD_TIME_NUGET_FEED_API_KEY }}
