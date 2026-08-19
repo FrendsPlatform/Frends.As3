@@ -40,7 +40,9 @@ public static class As3
             as3.User = connection.FtpUser;
             as3.Password = connection.FtpPassword;
             as3.Passive = connection.UsePassiveFtp;
-            as3.LogDirectory = "logs";
+
+            if (!string.IsNullOrEmpty(options.LogDirectory))
+                as3.LogDirectory = options.LogDirectory;
 
             if (connection.RequireEncrypted || connection.RequireSigned)
             {
