@@ -127,7 +127,7 @@ public class FunctionalTests
             input, TestSetup.Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("OriginalContentMIC field is required"));
+        Assert.That(result.Error.Message, Does.Contain("OriginalContentMic field is required"));
     }
 
     [Test]
