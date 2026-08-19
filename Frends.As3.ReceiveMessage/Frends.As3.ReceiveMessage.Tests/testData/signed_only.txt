@@ -1,0 +1,50 @@
+AS3-To: Receiver
+AS3-From: Sender
+AS3-Version: 1.0
+EDIINT-Features: CEM, multiple-attachments, AS2-Reliability
+Date: Thu, 06 Aug 2026 09:57:19 GMT
+Subject: Test AS3 Connection
+Message-Id: <<26bcb2bf-00d8-4436-845a-12eb2dd99395@localhost>>
+Disposition-Notification-To: usr@example.com
+Disposition-Notification-Options: signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha-256
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="boundaryG6EVAQ=="
+
+--boundaryG6EVAQ==
+Content-Type: text/plain
+Content-Transfer-Encoding: binary
+Content-Disposition: Attachment; filename="rfc1767.edi"
+
+This is a nice test message :)
+--boundaryG6EVAQ==
+Content-Type: application/pkcs7-signature;  	name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
+
+MIIFfAYJKoZIhvcNAQcCoIIFbTCCBWkCAQExDzANBglghkgBZQMEAgEFADALBgkqhkiG9w0BBwGg
+ggNZMIIDVTCCAj2gAwIBAgIUf8vD0OPaI3iAL7ZcUkKNks3kBj4wDQYJKoZIhvcNAQELBQAwOTEV
+MBMGA1UEAwwMVGVzdFNlbmRlcklkMRMwEQYDVQQKDApUZXN0U2VuZGVyMQswCQYDVQQGEwJQTDAg
+Fw0yNTA3MTUxNTI3MThaGA8yMTI1MDYyMTE1MjcxOFowOTEVMBMGA1UEAwwMVGVzdFNlbmRlcklk
+MRMwEQYDVQQKDApUZXN0U2VuZGVyMQswCQYDVQQGEwJQTDCCASIwDQYJKoZIhvcNAQEBBQADggEP
+ADCCAQoCggEBALUkY/EJ6e5EkoKNnSngSwqL8tuKkpDYf+xRFB2NF2et9AkFTTf+Nj67Plr4V5ny
+KiQjirELPmi7ovE5gdST5aKlMvN9csNoeu4OKS0/aTnKrWe2UnnQBidShAoarT9whtJnBm21VrgV
+I21lebw0+EoX3ovC+L8y+0OcmY29cbJQBrFz99giOMOrRUnWclgu/yeVhtucKGfnn4KKElEbhNaL
+AgqmxomV6ICtc+WBEL2OTa67A1r+sgXut5kCXcf7dBsih+gi4/g3YesdwfnIyB3C1yK4+MhyBRuk
+mPbk4RjfDAB8Rmjo06YkyFf8fXYqYewk7lI0lsefKkqx4htuE88CAwEAAaNTMFEwHQYDVR0OBBYE
+FJnzFhYOU4cfOierAKLXy1TIWf64MB8GA1UdIwQYMBaAFJnzFhYOU4cfOierAKLXy1TIWf64MA8G
+A1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAAGBSjOh2KtCdRSEbbtE+ufpMnbnP7Kh
+VJ6v9DKO40dijHn3mehUmHISD8H0wa0Mqx++rkFs6wr0sn3rxiaVYM4LmdHp4HVeHUZcY/XsOJFA
+ktY1M7AAZIiP+/athUxOUEHVfU9Bj703plz+PLH/DwmFRDngUXbltNPpIywBTQQpfTNFoNkSHjFk
+5v5B44f5duROUDz1QxrxW6YutdHPmkvE43QBhidxrNA8l9Yu+Iu+pmSg7z9/YEOaZX1PQeniFBK0
+XPxNfUtV3kzojDBukSXcXxIS2d8tFleLWNJpYKZ3YEyboCwZpIMNRST29B++CqlWhOuPsZFEpz0R
+1OCIl2YxggHnMIIB4wIBATBRMDkxFTATBgNVBAMMDFRlc3RTZW5kZXJJZDETMBEGA1UECgwKVGVz
+dFNlbmRlcjELMAkGA1UEBhMCUEwCFH/Lw9Dj2iN4gC+2XFJCjZLN5AY+MA0GCWCGSAFlAwQCAQUA
+oGkwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwODA2MDk1NzE5
+WjAvBgkqhkiG9w0BCQQxIgQgdJiEB7oIV60bG1GIi5sEDCpAjbh+uOOq+MOxACs4eFQwDQYJKoZI
+hvcNAQEBBQAEggEAWboL+iYqvMjwsU4S24GhVPOjmMg6/yWx/63kbpmfWXzB+w6aJYFIA6Ip8eIn
+WBsKRY/n+1ajXguO8wf0zkVFLEY8fZZunsQ0DugCasPginN0JeJ0h4pyq+Ewiy3l+K3NLGiFCkdQ
+33OkxxkehbN/UVbpoLRwcxtkJH5BLiRKOs5TuLvqM+igx6JoNqVoKHR82Nhsd5woiRzGp2RoRWin
+EPWLBGx71v9Jehj7wYR7J9bL7IoffDhKBlDt+dZEiqEsbzQkmrHzP2V7rKdeIqLCMOlcF4iOvkGl
+TcpVirF9eLxq350aTd5m9yylhrQ9Vx5LeTGa+UBbSY0cJW45YCKO2w==
+
+--boundaryG6EVAQ==--
