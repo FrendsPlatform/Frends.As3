@@ -1,0 +1,12 @@
+﻿[
+  {
+    "Task": "Frends.As3.ReceiveAndValidateMdn",
+    "Migrations": [
+      {
+        "Version": "1.0.0",
+        "Description": "",
+        "Migration": []
+      }
+    ]
+  }
+]
