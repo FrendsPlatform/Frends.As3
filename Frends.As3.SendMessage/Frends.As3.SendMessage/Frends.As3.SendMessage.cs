@@ -1,6 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As3.SendMessage.Definitions;
@@ -24,16 +28,16 @@ public static class As3
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, string PartnerResponse, string MessageId, string OriginalContentMIC, string MdnOptions, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> SendMessage(
-    [PropertyTab] Input input,
-    [PropertyTab] Connection connection,
-    [PropertyTab] Options options,
-    CancellationToken cancellationToken)
+        [PropertyTab] Input input,
+        [PropertyTab] Connection connection,
+        [PropertyTab] Options options,
+        CancellationToken cancellationToken)
     {
         try
         {
             ValidationHandler.Run(input, connection, options);
 
-            var as3 = NSoftware.Activation.NSoftware.ActivateAs3Sender();
+            using var as3 = NSoftware.Activation.NSoftware.ActivateAs3Sender();
 
             as3.AS3From = input.SenderAs3Id;
             as3.AS3To = input.ReceiverAs3Id;
@@ -46,6 +50,7 @@ public static class As3
             as3.Passive = connection.UsePassiveFtp;
 
             as3.MessageId = $"<{Guid.NewGuid()}@{connection.FtpHost}>";
+            ConfigureServerCertificateValidation(as3, options);
 
             as3.MDNTo = connection.MdnReceiver;
 
@@ -93,7 +98,8 @@ public static class As3
                 MessageId = as3.MessageId,
                 OriginalContentMIC = as3.OriginalContentMIC.Trim(),
                 MdnOptions = as3.MDNOptions,
-                PartnerResponse = $"File '{fileName}' successfully uploaded to FTP remote directory '{connection.RemoteFilePath ?? "/"}'.",
+                PartnerResponse =
+                    $"File '{fileName}' successfully uploaded to FTP remote directory '{connection.RemoteFilePath ?? "/"}'.",
             };
 
             return result;
@@ -102,5 +108,58 @@ public static class As3
         {
             return ErrorHandler.Handle(e, options);
         }
+    }
+
+    private static void ConfigureServerCertificateValidation(AS3Sender as3, Options options)
+    {
+        if (options.AllowInvalidCertificate || !string.IsNullOrWhiteSpace(options.TrustedCertificateBase64))
+            as3.SSLStartMode = AS3SenderSSLStartModes.sslExplicit;
+
+        if (options.AllowInvalidCertificate)
+        {
+            as3.OnSSLServerAuthentication += (_, e) => e.Accept = true;
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(options.TrustedCertificateBase64)) return;
+
+        byte[] trustedCertificateBytes;
+
+        try
+        {
+            trustedCertificateBytes = Convert.FromBase64String(options.TrustedCertificateBase64);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("TrustedCertificateBase64 is not a valid base64-encoded string.", ex);
+        }
+
+        as3.SSLAcceptServerCert = new Certificate(trustedCertificateBytes);
+    }
+
+    private static void ConfigureServerCertificateValidation(AS2Sender as2, Options options)
+    {
+        if (options.AllowInvalidCertificate)
+        {
+            as2.OnSSLServerAuthentication += (_, e) => e.Accept = true;
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(options.TrustedCertificateBase64)) return;
+
+        byte[] trustedCertificateBytes;
+
+        try
+        {
+            trustedCertificateBytes = Convert.FromBase64String(options.TrustedCertificateBase64);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("TrustedCertificateBase64 is not a valid base64-encoded string.", ex);
+        }
+
+        as2.SSLAcceptServerCert = new Certificate(trustedCertificateBytes);
     }
 }

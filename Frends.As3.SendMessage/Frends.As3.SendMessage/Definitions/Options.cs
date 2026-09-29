@@ -17,6 +17,23 @@ public class Options
     public string LogDirectory { get; set; }
 
     /// <summary>
+    /// Disables server certificate validation for the FTPS connection to the AS3 endpoint.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool AllowInvalidCertificate { get; set; }
+
+    /// <summary>
+    /// Base64 encoded server (or issuing CA) certificate, in DER or PEM format, that should be trusted
+    /// for the FTPS connection to the AS3 endpoint.
+    /// </summary>
+    /// <example>MIIF...BASE64...</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [DefaultValue("")]
+    [UIHint(nameof(AllowInvalidCertificate), "", false)]
+    public string TrustedCertificateBase64 { get; set; } = string.Empty;
+
+    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>false</example>
