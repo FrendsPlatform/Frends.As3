@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -31,6 +33,10 @@ public static class TestSetup
             .WithEnvironment("FTP_USER_HOME", FtpUserHomeAbsolute)
             .WithEnvironment("PUBLICHOST", "localhost")
             .WithEnvironment("FTP_PASSIVE_PORTS", $"{PassivePortMin}:{PassivePortMax}")
+            .WithEnvironment("ADDED_FLAGS", "--tls=1")
+            .WithEnvironment("TLS_CN", "localhost")
+            .WithEnvironment("TLS_ORG", "Frends")
+            .WithEnvironment("TLS_C", "FI")
             .WithPortBinding(FtpControlPort, FtpControlPort)
             .WithPortBinding(PassivePortMin, PassivePortMin)
             .WithPortBinding(PassivePortMin + 1, PassivePortMin + 1)
@@ -102,5 +108,27 @@ public static class TestSetup
         if (result.ExitCode != 0)
             throw new InvalidOperationException("The FTP file could not be read.");
         return result.Stdout;
+    }
+
+    public static async Task<string> GetFtpServerCertificateBase64Async(
+        IContainer container,
+        CancellationToken token)
+    {
+        const string command =
+            "openssl x509 -in /etc/ssl/private/pure-ftpd.pem -outform DER | base64 -w 0";
+        var result = await container.ExecAsync(new[] { "sh", "-c", command }, token);
+
+        if (result.ExitCode != 0)
+            throw new InvalidOperationException($"The FTP server certificate could not be read: {result.Stderr}");
+
+        return result.Stdout.Trim();
+    }
+
+    public static string GetUntrustedCertificateBase64()
+    {
+        var certificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem");
+        using var certificate = new X509Certificate2(certificatePath);
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
     }
 }

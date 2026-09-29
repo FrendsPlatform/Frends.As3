@@ -210,11 +210,80 @@ public class FunctionalTests
                 CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
-            Assert.That(Directory.GetFiles(logDir), Is.Not.Empty, "Log files should be created in the specified directory");
+            Assert.That(Directory.GetFiles(logDir), Is.Not.Empty,
+                "Log files should be created in the specified directory");
         }
         finally
         {
             Directory.Delete(logDir, recursive: true);
         }
+    }
+
+    [Test]
+    public async Task ShouldFailWithUntrustedCertificateOverHttpsByDefault()
+    {
+        var con = TestSetup.Connection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = TestSetup.GetUntrustedCertificateBase64();
+
+        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
+    }
+
+    [Test]
+    public async Task ShouldSendMessageOverHttpsWhenAllowInvalidCertificateIsTrue()
+    {
+        var con = TestSetup.Connection();
+        var opt = TestSetup.Options();
+        opt.AllowInvalidCertificate = true;
+
+        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64MatchesServerCertificate()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var trustedCertificateBase64 =
+            await TestSetup.GetFtpServerCertificateBase64Async(ftpContainer, cts.Token);
+
+        var con = TestSetup.Connection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = trustedCertificateBase64;
+
+        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True, result.Error?.Message);
+    }
+
+    [Test]
+    public async Task ShouldFailWhenTrustedCertificateBase64DoesNotMatchServerCertificate()
+    {
+        var con = TestSetup.Connection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = "invalid-cert";
+
+        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
+    }
+
+    [Test]
+    public async Task ShouldFailWithInvalidTrustedCertificateBase64Format()
+    {
+        var con = TestSetup.Connection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = "not-a-valid-base64-certificate!!";
+
+        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message,
+            Does.Contain("TrustedCertificateBase64 is not a valid base64-encoded string."));
     }
 }
