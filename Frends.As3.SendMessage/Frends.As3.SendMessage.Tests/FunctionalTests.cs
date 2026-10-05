@@ -210,7 +210,9 @@ public class FunctionalTests
                 CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
-            Assert.That(Directory.GetFiles(logDir), Is.Not.Empty,
+            Assert.That(
+                Directory.GetFiles(logDir),
+                Is.Not.Empty,
                 "Log files should be created in the specified directory");
         }
         finally
@@ -283,7 +285,8 @@ public class FunctionalTests
         var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message,
+        Assert.That(
+            result.Error.Message,
             Does.Contain("TrustedCertificateBase64 is not a valid base64-encoded string."));
     }
 }
