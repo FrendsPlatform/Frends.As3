@@ -35,7 +35,7 @@ public static class TestSetup
             .WithEnvironment("PUBLICHOST", "localhost")
             .WithEnvironment("FTP_PASSIVE_PORTS", $"{PassivePortMin}:{PassivePortMax}")
             .WithEnvironment("ADDED_FLAGS", "--tls=1")
-            .WithEnvironment("TLS_CN", "localhost")
+            .WithEnvironment("TLS_CN", "127.0.0.1")
             .WithEnvironment("TLS_ORG", "Frends")
             .WithEnvironment("TLS_C", "FI")
             .WithPortBinding(FtpControlPort, FtpControlPort)
