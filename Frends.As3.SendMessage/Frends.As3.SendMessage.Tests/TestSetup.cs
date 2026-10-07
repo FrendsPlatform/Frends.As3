@@ -70,7 +70,7 @@ public static class TestSetup
 
     public static Connection Connection() => new()
     {
-        FtpHost = "localhost",
+        FtpHost = "127.0.0.1",
         FtpPort = FtpControlPort,
         FtpUser = FtpUser,
         FtpPassword = FtpPass,
