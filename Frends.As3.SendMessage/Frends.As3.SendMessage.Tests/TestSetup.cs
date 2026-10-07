@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
@@ -124,10 +125,29 @@ public static class TestSetup
         return result.Stdout.Trim();
     }
 
+    public static async Task<string> GetFtpServerCertificatePemBase64Async(
+        IContainer container,
+        CancellationToken token)
+    {
+        var derBase64 = await GetFtpServerCertificateBase64Async(container, token);
+        using var certificate = new X509Certificate2(Convert.FromBase64String(derBase64));
+
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(certificate.ExportCertificatePem()));
+    }
+
     public static string GetUntrustedCertificateBase64()
     {
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem");
         using var certificate = new X509Certificate2(certificatePath);
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
+
+    public static string GetSenderCertificateBase64()
+    {
+        using var certificate = new X509Certificate2(
+            Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
+            "sender123");
 
         return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
     }

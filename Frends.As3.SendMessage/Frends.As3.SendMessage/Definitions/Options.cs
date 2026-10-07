@@ -24,8 +24,8 @@ public class Options
     public bool AllowInvalidCertificate { get; set; }
 
     /// <summary>
-    /// Base64 encoded server (or issuing CA) certificate, in DER or PEM format, that should be trusted
-    /// for the FTPS connection to the AS3 endpoint.
+    /// Base64 encoded server certificate, in DER or PEM format, that should be trusted
+    /// for the FTPS connection to the AS3 endpoint. For PEM format, Base64-encode the PEM text.
     /// </summary>
     /// <example>MIIF...BASE64...</example>
     [DisplayFormat(DataFormatString = "Text")]
