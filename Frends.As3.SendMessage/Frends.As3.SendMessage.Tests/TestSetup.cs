@@ -57,38 +57,6 @@ public static class TestSetup
         return container;
     }
 
-    // Passive ports must match inside and outside the container, so a contiguous free host range is reserved.
-    private static int FindFreePortRange(int count)
-    {
-        var random = new Random();
-        for (var attempt = 0; attempt < 100; attempt++)
-        {
-            var start = random.Next(20000, 60000 - count);
-            var listeners = new List<TcpListener>();
-            try
-            {
-                for (var port = start; port < start + count; port++)
-                {
-                    var listener = new TcpListener(IPAddress.Any, port);
-                    listener.Start();
-                    listeners.Add(listener);
-                }
-
-                return start;
-            }
-            catch (SocketException)
-            {
-            }
-            finally
-            {
-                foreach (var listener in listeners)
-                    listener.Stop();
-            }
-        }
-
-        throw new InvalidOperationException("No free passive port range found.");
-    }
-
     public static Input Input() => new()
     {
         SenderAs3Id = "Sender",
@@ -175,5 +143,36 @@ public static class TestSetup
             "sender123");
 
         return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
+
+    private static int FindFreePortRange(int count)
+    {
+        var random = new Random();
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var start = random.Next(20000, 60000 - count);
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var port = start; port < start + count; port++)
+                {
+                    var listener = new TcpListener(IPAddress.Any, port);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return start;
+            }
+            catch (SocketException)
+            {
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
+        throw new InvalidOperationException("No free passive port range found.");
     }
 }
