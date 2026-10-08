@@ -30,7 +30,7 @@ public class FunctionalTests
     {
         var result = await As3.SendMessage(
             TestSetup.Input(),
-            TestSetup.Connection(),
+            TestSetup.Connection(ftpContainer),
             TestSetup.Options(),
             CancellationToken.None);
 
@@ -43,7 +43,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendSignedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
 
         var result = await As3.SendMessage(
@@ -61,7 +61,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendEncryptedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.EncryptMessage = true;
 
         var result = await As3.SendMessage(
@@ -80,7 +80,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendSignedAndEncryptedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
         con.EncryptMessage = true;
 
@@ -102,7 +102,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldUploadFileToRemoteDirectory()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.RemoteFilePath = TestSetup.FtpSubdirRelative;
 
         var result = await As3.SendMessage(
@@ -118,7 +118,7 @@ public class FunctionalTests
     {
         var result = await As3.SendMessage(
             TestSetup.Input(),
-            TestSetup.Connection(),
+            TestSetup.Connection(ftpContainer),
             TestSetup.Options(),
             CancellationToken.None);
 
@@ -130,7 +130,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldFailWithInvalidFtpHost()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.FtpHost = "invalid-host-that-does-not-exist";
 
         var opt = TestSetup.Options();
@@ -146,7 +146,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldFailWithInvalidCredentials()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.FtpUser = "wronguser";
         con.FtpPassword = "wrongpassword";
 
@@ -170,7 +170,7 @@ public class FunctionalTests
         opt.ThrowErrorOnFailure = false;
 
         var result = await As3.SendMessage(
-            input, TestSetup.Connection(), opt, CancellationToken.None);
+            input, TestSetup.Connection(ftpContainer), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("Could not find"));
@@ -179,7 +179,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldPopulateResultFieldsOnSuccess()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
 
         var result = await As3.SendMessage(
@@ -205,7 +205,7 @@ public class FunctionalTests
 
             var result = await As3.SendMessage(
                 TestSetup.Input(),
-                TestSetup.Connection(),
+                TestSetup.Connection(ftpContainer),
                 opt,
                 CancellationToken.None);
 
@@ -219,90 +219,5 @@ public class FunctionalTests
         {
             Directory.Delete(logDir, recursive: true);
         }
-    }
-
-    [Test]
-    public async Task ShouldFailWithUntrustedCertificateOverHttpsByDefault()
-    {
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = TestSetup.GetUntrustedCertificateBase64();
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
-    }
-
-    [Test]
-    public async Task ShouldSendMessageOverHttpsWhenAllowInvalidCertificateIsTrue()
-    {
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.AllowInvalidCertificate = true;
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.True);
-    }
-
-    [Test]
-    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64MatchesServerCertificate()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var trustedCertificateBase64 =
-            await TestSetup.GetFtpServerCertificateBase64Async(ftpContainer, cts.Token);
-
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = trustedCertificateBase64;
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.True, result.Error?.Message);
-    }
-
-    [Test]
-    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64ContainsPemEncodedServerCertificate()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var trustedCertificateBase64 =
-            await TestSetup.GetFtpServerCertificatePemBase64Async(ftpContainer, cts.Token);
-
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = trustedCertificateBase64;
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.True, result.Error?.Message);
-    }
-
-    [Test]
-    public async Task ShouldFailWhenTrustedCertificateBase64ContainsDifferentValidCertificate()
-    {
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = TestSetup.GetSenderCertificateBase64();
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
-    }
-
-    [Test]
-    public async Task ShouldFailWithInvalidTrustedCertificateBase64Format()
-    {
-        var con = TestSetup.Connection();
-        var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = "not-a-valid-base64-certificate!!";
-
-        var result = await As3.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
-
-        Assert.That(result.Success, Is.False);
-        Assert.That(
-            result.Error.Message,
-            Does.Contain("TrustedCertificateBase64 is not a valid base64-encoded string."));
     }
 }
