@@ -30,7 +30,7 @@ public class FunctionalTests
     {
         var result = await As3.SendMessage(
             TestSetup.Input(),
-            TestSetup.Connection(),
+            TestSetup.Connection(ftpContainer),
             TestSetup.Options(),
             CancellationToken.None);
 
@@ -43,7 +43,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendSignedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
 
         var result = await As3.SendMessage(
@@ -61,7 +61,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendEncryptedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.EncryptMessage = true;
 
         var result = await As3.SendMessage(
@@ -80,7 +80,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldSendSignedAndEncryptedMessage()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
         con.EncryptMessage = true;
 
@@ -102,7 +102,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldUploadFileToRemoteDirectory()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.RemoteFilePath = TestSetup.FtpSubdirRelative;
 
         var result = await As3.SendMessage(
@@ -118,7 +118,7 @@ public class FunctionalTests
     {
         var result = await As3.SendMessage(
             TestSetup.Input(),
-            TestSetup.Connection(),
+            TestSetup.Connection(ftpContainer),
             TestSetup.Options(),
             CancellationToken.None);
 
@@ -130,7 +130,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldFailWithInvalidFtpHost()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.FtpHost = "invalid-host-that-does-not-exist";
 
         var opt = TestSetup.Options();
@@ -146,7 +146,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldFailWithInvalidCredentials()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.FtpUser = "wronguser";
         con.FtpPassword = "wrongpassword";
 
@@ -170,7 +170,7 @@ public class FunctionalTests
         opt.ThrowErrorOnFailure = false;
 
         var result = await As3.SendMessage(
-            input, TestSetup.Connection(), opt, CancellationToken.None);
+            input, TestSetup.Connection(ftpContainer), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("Could not find"));
@@ -179,7 +179,7 @@ public class FunctionalTests
     [Test]
     public async Task ShouldPopulateResultFieldsOnSuccess()
     {
-        var con = TestSetup.Connection();
+        var con = TestSetup.Connection(ftpContainer);
         con.SignMessage = true;
 
         var result = await As3.SendMessage(
@@ -205,12 +205,15 @@ public class FunctionalTests
 
             var result = await As3.SendMessage(
                 TestSetup.Input(),
-                TestSetup.Connection(),
+                TestSetup.Connection(ftpContainer),
                 opt,
                 CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
-            Assert.That(Directory.GetFiles(logDir), Is.Not.Empty, "Log files should be created in the specified directory");
+            Assert.That(
+                Directory.GetFiles(logDir),
+                Is.Not.Empty,
+                "Log files should be created in the specified directory");
         }
         finally
         {

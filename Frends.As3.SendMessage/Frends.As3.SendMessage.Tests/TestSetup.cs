@@ -1,5 +1,10 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -12,8 +17,7 @@ public static class TestSetup
     public const string FtpSubdirRelative = "subdir";
 
     private const int FtpControlPort = 21;
-    private const int PassivePortMin = 30000;
-    private const int PassivePortMax = 30009;
+    private const int PassivePortCount = 3;
     private const string FtpUser = "testuser";
     private const string FtpPass = "testpass";
 
@@ -25,24 +29,24 @@ public static class TestSetup
 
     public static async Task<IContainer> StartFtpContainerAsync()
     {
+        var passivePortMin = FindFreePortRange(PassivePortCount);
+        var passivePortMax = passivePortMin + PassivePortCount - 1;
+
         var builder = new ContainerBuilder("stilliard/pure-ftpd:latest")
             .WithEnvironment("FTP_USER_NAME", FtpUser)
             .WithEnvironment("FTP_USER_PASS", FtpPass)
             .WithEnvironment("FTP_USER_HOME", FtpUserHomeAbsolute)
             .WithEnvironment("PUBLICHOST", "localhost")
-            .WithEnvironment("FTP_PASSIVE_PORTS", $"{PassivePortMin}:{PassivePortMax}")
-            .WithPortBinding(FtpControlPort, FtpControlPort)
-            .WithPortBinding(PassivePortMin, PassivePortMin)
-            .WithPortBinding(PassivePortMin + 1, PassivePortMin + 1)
-            .WithPortBinding(PassivePortMin + 2, PassivePortMin + 2)
-            .WithPortBinding(PassivePortMin + 3, PassivePortMin + 3)
-            .WithPortBinding(PassivePortMin + 4, PassivePortMin + 4)
-            .WithPortBinding(PassivePortMin + 5, PassivePortMin + 5)
-            .WithPortBinding(PassivePortMin + 6, PassivePortMin + 6)
-            .WithPortBinding(PassivePortMin + 7, PassivePortMin + 7)
-            .WithPortBinding(PassivePortMin + 8, PassivePortMin + 8)
-            .WithPortBinding(PassivePortMin + 9, PassivePortMin + 9)
+            .WithEnvironment("FTP_PASSIVE_PORTS", $"{passivePortMin}:{passivePortMax}")
+            .WithEnvironment("ADDED_FLAGS", "--tls=1")
+            .WithEnvironment("TLS_CN", "localhost")
+            .WithEnvironment("TLS_ORG", "Frends")
+            .WithEnvironment("TLS_C", "FI")
+            .WithPortBinding(FtpControlPort, true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(FtpControlPort));
+
+        for (var port = passivePortMin; port <= passivePortMax; port++)
+            builder = builder.WithPortBinding(port, port);
 
         var container = builder.Build();
         await container.StartAsync();
@@ -61,10 +65,10 @@ public static class TestSetup
         MessageFilePath = TestFilePath,
     };
 
-    public static Connection Connection() => new()
+    public static Connection Connection(IContainer container) => new()
     {
         FtpHost = "localhost",
-        FtpPort = FtpControlPort,
+        FtpPort = container.GetMappedPublicPort(FtpControlPort),
         FtpUser = FtpUser,
         FtpPassword = FtpPass,
         UsePassiveFtp = true,
@@ -102,5 +106,73 @@ public static class TestSetup
         if (result.ExitCode != 0)
             throw new InvalidOperationException("The FTP file could not be read.");
         return result.Stdout;
+    }
+
+    public static async Task<string> GetFtpServerCertificateBase64Async(
+        IContainer container)
+    {
+        const string command =
+            "openssl x509 -in /etc/ssl/private/pure-ftpd.pem -outform DER | base64 -w 0";
+        var result = await container.ExecAsync(["sh", "-c", command]);
+
+        if (result.ExitCode != 0)
+            throw new InvalidOperationException($"The FTP server certificate could not be read: {result.Stderr}");
+
+        return result.Stdout.Trim();
+    }
+
+    public static string ConvertDerBase64ToPemBase64(string derBase64)
+    {
+        using var certificate = new X509Certificate2(Convert.FromBase64String(derBase64));
+
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(certificate.ExportCertificatePem()));
+    }
+
+    public static string GetUntrustedCertificateBase64()
+    {
+        var certificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem");
+        using var certificate = new X509Certificate2(certificatePath);
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
+
+    public static string GetSenderCertificateBase64()
+    {
+        using var certificate = new X509Certificate2(
+            Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
+            "sender123");
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
+
+    private static int FindFreePortRange(int count)
+    {
+        var random = new Random();
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var start = random.Next(20000, 60000 - count);
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var port = start; port < start + count; port++)
+                {
+                    var listener = new TcpListener(IPAddress.Any, port);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return start;
+            }
+            catch (SocketException)
+            {
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
+        throw new InvalidOperationException("No free passive port range found.");
     }
 }
